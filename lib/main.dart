@@ -140,8 +140,8 @@ class _MySearchBarState extends State<MySearchBar> {
                       onPressed: () => runClosestCandidate(runFieldController.text),
                       icon: Image.memory(
                         (apps[index] as ApplicationWithIcon).icon,
-                        width: 30.0,
-                        height: 30.0
+                        width: 50.0,
+                        height: 50.0
                       )
                     ),
                     
