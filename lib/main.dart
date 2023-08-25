@@ -135,11 +135,14 @@ class _MySearchBarState extends State<MySearchBar> {
                   runAlignment: WrapAlignment.center,
                   direction: Axis.vertical,
                   children: <Widget>[
-                    
-                    Image.memory(
-                      (apps[index] as ApplicationWithIcon).icon,
-                      width: 30.0,
-                      height: 30.0
+
+                    IconButton(
+                      onPressed: () => runClosestCandidate(runFieldController.text),
+                      icon: Image.memory(
+                        (apps[index] as ApplicationWithIcon).icon,
+                        width: 30.0,
+                        height: 30.0
+                      )
                     ),
                     
                     TextButton(
