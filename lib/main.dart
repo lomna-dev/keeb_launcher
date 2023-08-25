@@ -39,6 +39,9 @@ class MySearchBar extends StatefulWidget{
 class _MySearchBarState extends State<MySearchBar> {
   final runFieldController = TextEditingController();
   final scratchFieldController = TextEditingController();
+
+  final runFieldFocus = FocusNode();
+  final scratchFieldFocus = FocusNode();
   
   List<Application> apps = [];
 
@@ -49,6 +52,13 @@ class _MySearchBarState extends State<MySearchBar> {
       onlyAppsWithLaunchIntent: false
     );
     
+    setState((){
+        apps.sort((a,b) => a.appName.compareTo(b.appName));
+    });
+  }
+
+  void resetRunField(){
+    runFieldController.clear();
     setState((){
         apps.sort((a,b) => a.appName.compareTo(b.appName));
     });
@@ -76,6 +86,19 @@ class _MySearchBarState extends State<MySearchBar> {
     setState((){});
   }
 
+  void runAppUsingPackageName(String packageName){
+    if(apps.length == 0) { return; }
+    
+    if(runFieldController.text.length > 0 && runFieldController.text[0] == '!'){
+      DeviceApps.openAppSettings(packageName);
+      resetRunField();
+      return;
+    }
+
+    DeviceApps.openApp(packageName);
+    resetRunField();
+  }
+  
   void runClosestCandidate(String input){
     if(apps.length == 0) { return; }
 
@@ -84,11 +107,8 @@ class _MySearchBarState extends State<MySearchBar> {
     }else{
       DeviceApps.openApp(apps.first.packageName);
     }
-    
-    runFieldController.clear();
-    setState((){
-        apps.sort((a,b) => a.appName.compareTo(b.appName));
-    });
+
+    resetRunField();
   }
 
   @override
@@ -102,14 +122,23 @@ class _MySearchBarState extends State<MySearchBar> {
     return Column(
       children: <Widget>[
         SizedBox(height: 10),
+
+        OutlinedButton(
+          onPressed: () => scratchFieldFocus.requestFocus(),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Center(child: Text("edit"))
+          )
+        ),
         
         Expanded(child: TextField(
+            focusNode: scratchFieldFocus,
             controller: scratchFieldController,
-            maxLines: 99999,            
-            //decoration: InputDecoration(
-            //  labelText: 'scratch',
-            //  border: OutlineInputBorder()
-            //),
+            maxLines: 99999,
+            onTap: () {
+              scratchFieldFocus.unfocus();
+              runFieldFocus.requestFocus();
+            },
         )),
 
         SizedBox(height: 10),
@@ -137,7 +166,7 @@ class _MySearchBarState extends State<MySearchBar> {
                   children: <Widget>[
 
                     IconButton(
-                      onPressed: () => runClosestCandidate(runFieldController.text),
+                      onPressed: () => runAppUsingPackageName(apps[index].packageName),
                       icon: Image.memory(
                         (apps[index] as ApplicationWithIcon).icon,
                         width: 50.0,
@@ -147,7 +176,7 @@ class _MySearchBarState extends State<MySearchBar> {
                     
                     TextButton(
                       child: Text('${apps[index].appName}'),
-                      onPressed: () => runClosestCandidate(runFieldController.text),
+                      onPressed: () => runAppUsingPackageName(apps[index].packageName),
                     )
                   ]
                 )
@@ -163,6 +192,7 @@ class _MySearchBarState extends State<MySearchBar> {
         TextField(
           autofocus: true,
           controller: runFieldController,
+          focusNode: runFieldFocus,
           
           decoration: InputDecoration(
             labelText: 'run app',
