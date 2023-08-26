@@ -36,12 +36,9 @@ class MySearchBar extends StatefulWidget{
   State<MySearchBar> createState() => _MySearchBarState();
 }
 
-class _MySearchBarState extends State<MySearchBar> {
+class _MySearchBarState extends State<MySearchBar> with WidgetsBindingObserver {
   final runFieldController = TextEditingController();
-  final scratchFieldController = TextEditingController();
-
   final runFieldFocus = FocusNode();
-  final scratchFieldFocus = FocusNode();
   
   List<Application> apps = [];
 
@@ -67,23 +64,23 @@ class _MySearchBarState extends State<MySearchBar> {
   void filterCandidates(String input){
     if(apps.length == 0) { return; }
 
-    var j = 0;
-    var temp = apps[0];
+    setState((){
+        var j = 0;
+        var temp = apps[0];
 
-    if(input.length > 0 && input[0] == '!'){
-      input = input.substring(1);
-    }
-    
-    for(int i = 0; i < apps.length; i++){
-      if(apps[i].appName.toLowerCase().startsWith(input)){
-        temp = apps[i];
-        apps[i] = apps[j];
-        apps[j] = temp;
-        j = j + 1;
-      }
-    }
-
-    setState((){});
+        if(input.length > 0 && input[0] == '!'){
+          input = input.substring(1);
+        }
+        
+        for(int i = 0; i < apps.length; i++){
+          if(apps[i].appName.toLowerCase().startsWith(input)){
+            temp = apps[i];
+            apps[i] = apps[j];
+            apps[j] = temp;
+            j = j + 1;
+          }
+        }
+    });
   }
 
   void runAppUsingPackageName(String packageName){
@@ -114,7 +111,23 @@ class _MySearchBarState extends State<MySearchBar> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance?.addObserver(this);
     getAppsList();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance?.removeObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(state == AppLifecycleState.resumed){
+      setState((){
+          apps.sort((a,b) => a.appName.compareTo(b.appName));
+      });
+    }
   }
 
   bool scratchEnabled = false;
@@ -138,8 +151,6 @@ class _MySearchBarState extends State<MySearchBar> {
         ),
         
         Expanded(child: TextField(
-            focusNode: scratchFieldFocus,
-            controller: scratchFieldController,
             enabled: scratchEnabled,
             maxLines: 99999,
         )),
