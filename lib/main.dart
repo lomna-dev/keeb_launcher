@@ -49,7 +49,7 @@ class _MySearchBarState extends State<MySearchBar> {
     apps = await DeviceApps.getInstalledApplications(
       includeAppIcons: true,
       includeSystemApps: true,
-      onlyAppsWithLaunchIntent: false
+      onlyAppsWithLaunchIntent: true
     );
     
     setState((){
@@ -116,6 +116,8 @@ class _MySearchBarState extends State<MySearchBar> {
     super.initState();
     getAppsList();
   }
+
+  bool scratchEnabled = false;
   
   @override
   Widget build(BuildContext context) {
@@ -124,21 +126,22 @@ class _MySearchBarState extends State<MySearchBar> {
         SizedBox(height: 10),
 
         OutlinedButton(
-          onPressed: () => scratchFieldFocus.requestFocus(),
+          onPressed: () {
+            setState((){
+                scratchEnabled = !scratchEnabled;
+            });
+          },
           child: SizedBox(
             width: MediaQuery.of(context).size.width,
-            child: Center(child: Text("edit"))
+            child: Center(child: (scratchEnabled) ? Text("Editing Enabled") : Text("Editing Disabled") )
           )
         ),
         
         Expanded(child: TextField(
             focusNode: scratchFieldFocus,
             controller: scratchFieldController,
+            enabled: scratchEnabled,
             maxLines: 99999,
-            onTap: () {
-              scratchFieldFocus.unfocus();
-              runFieldFocus.requestFocus();
-            },
         )),
 
         SizedBox(height: 10),
@@ -198,6 +201,8 @@ class _MySearchBarState extends State<MySearchBar> {
             labelText: 'run app',
             border: OutlineInputBorder()
           ),
+
+          onTapOutside: (PointerDownEvent event) => runFieldFocus.requestFocus(),
           
           onChanged: filterCandidates,
           onSubmitted: runClosestCandidate
