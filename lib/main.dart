@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
           ),
           body: Align(
             alignment: Alignment.bottomCenter,
-            child: MySearchBar()
+            child: MySearchBar(),
           )
         )
       )
@@ -68,12 +68,21 @@ class _MySearchBarState extends State<MySearchBar> with WidgetsBindingObserver {
         var j = 0;
         var temp = apps[0];
 
-        if(input.length > 0 && input[0] == '!'){
+        if(input.length > 0 && input[0] == '!') {
           input = input.substring(1);
         }
         
-        for(int i = 0; i < apps.length; i++){
+        for(int i = 0; i < apps.length; i++) {
           if(apps[i].appName.toLowerCase().startsWith(input)){
+            temp = apps[i];
+            apps[i] = apps[j];
+            apps[j] = temp;
+            j = j + 1;
+          }
+        }
+
+        for(int i = j; i < apps.length; i++) {
+          if(apps[i].appName.toLowerCase().contains(input)){
             temp = apps[i];
             apps[i] = apps[j];
             apps[j] = temp;
@@ -160,16 +169,15 @@ class _MySearchBarState extends State<MySearchBar> with WidgetsBindingObserver {
         SizedBox(
           width: (apps.length == 0) ? 48 : MediaQuery.of(context).size.width,
           height: 48,
-          child: (apps.length == 0) ? CircularProgressIndicator() : ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: apps.length,
-            itemBuilder: (BuildContext context, int index) {
-              
-              return Container(
+          child: (apps.length == 0) ? CircularProgressIndicator() :
+
+          Row(
+            children: <Widget>[
+              Container(
                 margin: EdgeInsets.all(2.5),
                 padding: EdgeInsets.all(2.5),
                 decoration: BoxDecoration(
-                  border: Border.all(color: (index == 0) ? Colors.red : Colors.grey ),
+                  border: Border.all(color: Colors.red),
                   borderRadius: BorderRadius.circular(5)
                 ),
                 
@@ -180,24 +188,64 @@ class _MySearchBarState extends State<MySearchBar> with WidgetsBindingObserver {
                   children: <Widget>[
 
                     IconButton(
-                      onPressed: () => runAppUsingPackageName(apps[index].packageName),
+                      onPressed: () => runAppUsingPackageName(apps[0].packageName),
                       icon: Image.memory(
-                        (apps[index] as ApplicationWithIcon).icon,
+                        (apps[0] as ApplicationWithIcon).icon,
                         width: 50.0,
                         height: 50.0
                       )
                     ),
                     
                     TextButton(
-                      child: Text('${apps[index].appName}'),
-                      onPressed: () => runAppUsingPackageName(apps[index].packageName),
+                      child: Text('${apps[0].appName}'),
+                      onPressed: () => runAppUsingPackageName(apps[0].packageName),
                     )
                   ]
                 )
-              );
-              
-            },
-            separatorBuilder: (BuildContext context, int index) => const Divider(),
+              ),
+
+              Expanded(
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: apps.length - 1,
+                  itemBuilder: (BuildContext context, int index) {
+                    
+                    return Container(
+                      margin: EdgeInsets.all(2.5),
+                      padding: EdgeInsets.all(2.5),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey ),
+                        borderRadius: BorderRadius.circular(5)
+                      ),
+                      
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        runAlignment: WrapAlignment.center,
+                        direction: Axis.vertical,
+                        children: <Widget>[
+                          
+                          IconButton(
+                            onPressed: () => runAppUsingPackageName(apps[index + 1].packageName),
+                            icon: Image.memory(
+                              (apps[index + 1] as ApplicationWithIcon).icon,
+                              width: 50.0,
+                              height: 50.0
+                            )
+                          ),
+                          
+                          TextButton(
+                            child: Text('${apps[index + 1].appName}'),
+                            onPressed: () => runAppUsingPackageName(apps[index + 1].packageName),
+                          )
+                        ]
+                      )
+                    );
+                    
+                  },
+                  separatorBuilder: (BuildContext context, int index) => const Divider(),
+                )
+              )
+            ]
           )
         ),
 
