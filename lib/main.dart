@@ -7,6 +7,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // MyApp({super.key});
+  final searchBarObject = MySearchBar();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
       home: WillPopScope(
         onWillPop: () async {
           print("tried to close");
+          searchBarObject.resetSearchBar();
           return false;
         },
         child: Scaffold(
@@ -23,7 +25,7 @@ class MyApp extends StatelessWidget {
           ),
           body: Align(
             alignment: Alignment.bottomCenter,
-            child: MySearchBar(),
+            child: searchBarObject,
           )
         )
       )
@@ -32,8 +34,16 @@ class MyApp extends StatelessWidget {
 }
 
 class MySearchBar extends StatefulWidget{
+  final stateObject = _MySearchBarState();
+
+  void resetSearchBar(){
+    stateObject.resetRunField();
+  }
+  
   @override
-  State<MySearchBar> createState() => _MySearchBarState();
+  State<MySearchBar> createState() {
+    return stateObject;
+  }
 }
 
 class _MySearchBarState extends State<MySearchBar> with WidgetsBindingObserver {
